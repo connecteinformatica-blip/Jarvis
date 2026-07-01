@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<link rel="icon" href="data:,">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LEX AI</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="grid"></div>
+
+<header>
+    <h1>LEX AI</h1>
+</header>
+
+<main>
+
+    <div class="left-panel">
+
+        <div class="card">
+<pre>
+import pandas as pd
+df = pd.read_csv()
+</pre>
+        </div>
+
+        <div class="card">
+<pre>
+model.fit(X_train, y_train)
+</pre>
+        </div>
+
+    </div>
+
+    <div class="center-panel">
+
+        <h2>BEM-VINDO</h2>
+
+        <p>Como posso ajudar?</p>
+
+        <div class="hud">
+
+            <div class="ring outer"></div>
+            <div class="ring middle"></div>
+            <div class="ring inner"></div>
+
+            <div class="core" id="core"></div>
+
+        </div>
+
+        <div id="chatContainer">
+
+            <div class="message bot-message">
+                <strong>LEX AI</strong>
+                <p>Olá! Estou online e pronto para ajudar.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="right-panel">
+
+        <div class="metric">
+            <h3>API</h3>
+            <div class="status-value" id="apiStatus">
+                ONLINE
+            </div>
+        </div>
+
+        <div class="metric">
+            <h3>Speech</h3>
+            <div class="status-value">
+                ATIVO
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<footer>
+
+    <input
+        type="text"
+        id="message"
+        placeholder="Digite sua pergunta..."
+    >
+
+    <button id="micBtn">
+        🎤
+    </button>
+
+    <button id="sendBtn">
+        ➤
+    </button>
+
+</footer>
+
+<script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
