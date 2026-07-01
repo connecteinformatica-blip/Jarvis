@@ -1,19 +1,15 @@
 console.clear();
 console.log("LEX AI ONLINE");
 
-// ======================================
-// CONFIGURAÇÕES
-// ======================================
-
+let OPENAI_ENDPOINT = "";
 let OPENAI_KEY = "";
+let OPENAI_MODEL = "";
+
 let SPEECH_KEY = "";
 let SPEECH_REGION = "";
+let SPEECH_VOICE = "";
 
 let configuracoesCarregadas = false;
-
-// ======================================
-// CARREGAR KEYS.JSON
-// ======================================
 
 async function carregarConfiguracoes() {
 
@@ -23,32 +19,29 @@ async function carregarConfiguracoes() {
 
         const response = await fetch("./keys.json");
 
-        if (!response.ok) {
-            throw new Error(
-                "Não foi possível localizar keys.json"
-            );
-        }
-
         const config = await response.json();
 
+        OPENAI_ENDPOINT = config.AZURE_OPENAI_ENDPOINT;
         OPENAI_KEY = config.AZURE_OPENAI_KEY;
+        OPENAI_MODEL = config.AZURE_OPENAI_MODEL;
+
         SPEECH_KEY = config.AZURE_SPEECH_KEY;
         SPEECH_REGION = config.AZURE_SPEECH_REGION;
+        SPEECH_VOICE = config.AZURE_SPEECH_VOICE;
 
         configuracoesCarregadas = true;
 
         console.log("CONFIGURAÇÕES CARREGADAS");
-        console.log("OPENAI KEY:", OPENAI_KEY ? "OK" : "VAZIA");
-        console.log("SPEECH KEY:", SPEECH_KEY ? "OK" : "VAZIA");
+        console.log("OPENAI:", OPENAI_KEY ? "OK" : "VAZIA");
+        console.log("MODEL:", OPENAI_MODEL);
+        console.log("SPEECH:", SPEECH_KEY ? "OK" : "VAZIA");
         console.log("REGION:", SPEECH_REGION);
+        console.log("VOICE:", SPEECH_VOICE);
 
     }
     catch (erro) {
 
-        console.error(
-            "Erro ao carregar keys.json",
-            erro
-        );
+        console.error(erro);
 
         alert(
             "Erro ao carregar keys.json"
@@ -58,21 +51,20 @@ async function carregarConfiguracoes() {
 
 carregarConfiguracoes();
 
+const sendBtn =
+    document.getElementById("sendBtn");
 
-// ======================================
-// ELEMENTOS
-// ======================================
+const micBtn =
+    document.getElementById("micBtn");
 
-const sendBtn = document.getElementById("sendBtn");
-const micBtn = document.getElementById("micBtn");
-const input = document.getElementById("message");
-const chat = document.getElementById("chatContainer");
-const apiStatus = document.getElementById("apiStatus");
+const input =
+    document.getElementById("message");
 
+const chat =
+    document.getElementById("chatContainer");
 
-// ======================================
-// EVENTOS
-// ======================================
+const apiStatus =
+    document.getElementById("apiStatus");
 
 if (sendBtn) {
     sendBtn.addEventListener(
@@ -100,16 +92,13 @@ if (input) {
 
         }
     );
+
 }
-
-
-// ======================================
-// ENVIAR PERGUNTA
-// ======================================
 
 async function enviarPergunta() {
 
-    const pergunta = input.value.trim();
+    const pergunta =
+        input.value.trim();
 
     if (!pergunta) return;
 
@@ -121,56 +110,58 @@ async function enviarPergunta() {
 
     input.value = "";
 
-    apiStatus.innerHTML = "PROCESSANDO";
+    apiStatus.innerHTML =
+        "PROCESSANDO";
 
     try {
 
-        const response = await fetch(
-            " ",
-            {
-                method: "POST",
+        const response =
+            await fetch(
+                OPENAI_ENDPOINT,
+                {
+                    method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization":
-                        `Bearer ${OPENAI_KEY}`
-                },
+                    headers: {
+                        "Content-Type":
+                            "application/json",
 
-                body: JSON.stringify({
+                        "Authorization":
+                            `Bearer ${OPENAI_KEY}`
+                    },
 
-                    model: "o4-mini",
+                    body: JSON.stringify({
 
-                    messages: [
-                        {
-                            role: "user",
-                            content: pergunta
-                        }
-                    ],
+                        model:
+                            OPENAI_MODEL,
 
-                    max_completion_tokens: 4000,
-                    reasoning_effort: "low"
-                })
-            }
-        );
+                        messages: [
+                            {
+                                role: "user",
+                                content: pergunta
+                            }
+                        ],
 
-        const data = await response.json();
+                        max_completion_tokens: 4000
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
 
         console.log(data);
 
-        let resposta = "";
+        let resposta =
+            "Não foi possível obter resposta.";
 
         if (
             data.choices &&
             data.choices.length > 0
         ) {
+
             resposta =
                 data.choices[0]
                     .message.content;
-        }
-        else {
-
-            resposta =
-                "Não foi possível obter resposta da IA.";
 
         }
 
@@ -185,10 +176,7 @@ async function enviarPergunta() {
     }
     catch (erro) {
 
-        console.error(
-            "Erro OpenAI:",
-            erro
-        );
+        console.error(erro);
 
         adicionarMensagem(
             "LEX AI",
@@ -198,13 +186,9 @@ async function enviarPergunta() {
 
     }
 
-    apiStatus.innerHTML = "ONLINE";
+    apiStatus.innerHTML =
+        "ONLINE";
 }
-
-
-// ======================================
-// ADICIONAR MENSAGENS
-// ======================================
 
 function adicionarMensagem(
     autor,
@@ -223,12 +207,7 @@ function adicionarMensagem(
         chat.scrollHeight;
 }
 
-
-// ======================================
-// MICROFONE
-// ======================================
-
-async function iniciarReconhecimento() {
+function iniciarReconhecimento() {
 
     if (!configuracoesCarregadas) {
 
@@ -239,170 +218,83 @@ async function iniciarReconhecimento() {
         return;
     }
 
-    if (!SPEECH_KEY) {
-
-        alert(
-            "Speech Key não encontrada."
-        );
-
-        return;
-    }
-
-    if (!SPEECH_REGION) {
-
-        alert(
-            "Speech Region não encontrada."
-        );
-
-        return;
-    }
-
-    console.log(
-        "Iniciando reconhecimento..."
-    );
-
     micBtn.innerHTML = "🎙️";
 
-    try {
+    const speechConfig =
+        SpeechSDK.SpeechConfig.fromSubscription(
+            SPEECH_KEY,
+            SPEECH_REGION
+        );
 
-        const speechConfig =
-            SpeechSDK.SpeechConfig
-                .fromSubscription(
-                    SPEECH_KEY,
-                    SPEECH_REGION
-                );
+    speechConfig.speechRecognitionLanguage =
+        "pt-BR";
 
-        speechConfig
-            .speechRecognitionLanguage =
-            "pt-BR";
+    const audioConfig =
+        SpeechSDK.AudioConfig
+            .fromDefaultMicrophoneInput();
 
-        const audioConfig =
-            SpeechSDK.AudioConfig
-                .fromDefaultMicrophoneInput();
+    const recognizer =
+        new SpeechSDK.SpeechRecognizer(
+            speechConfig,
+            audioConfig
+        );
 
-        const recognizer =
-            new SpeechSDK.SpeechRecognizer(
-                speechConfig,
-                audioConfig
-            );
+    recognizer.recognizeOnceAsync(
 
-        recognizer.recognizeOnceAsync(
+        function (result) {
 
-            function (result) {
+            micBtn.innerHTML = "🎤";
 
-                micBtn.innerHTML = "🎤";
+            if (
+                result.reason ===
+                SpeechSDK.ResultReason
+                    .RecognizedSpeech
+            ) {
 
-                console.log(result);
+                input.value =
+                    result.text;
 
-                if (
-                    result.reason ===
-                    SpeechSDK.ResultReason
-                        .RecognizedSpeech
-                ) {
-
-                    input.value =
-                        result.text;
-
-                    enviarPergunta();
-                }
-
-                else {
-
-                    alert(
-                        "Não foi possível reconhecer a fala."
-                    );
-
-                }
-
-                recognizer.close();
-            },
-
-            function (erro) {
-
-                micBtn.innerHTML = "🎤";
-
-                console.error(
-                    erro
-                );
-
-                alert(
-                    "Erro no reconhecimento de voz."
-                );
-
-                recognizer.close();
+                enviarPergunta();
             }
-        );
-    }
-    catch (erro) {
 
-        micBtn.innerHTML = "🎤";
+            recognizer.close();
+        },
 
-        console.error(
-            "Erro Speech:",
-            erro
-        );
+        function (erro) {
 
-        alert(
-            "Erro ao iniciar Speech Service."
-        );
-    }
+            micBtn.innerHTML = "🎤";
+
+            console.error(erro);
+
+            recognizer.close();
+        }
+    );
 }
-
-
-// ======================================
-// FALAR RESPOSTA
-// ======================================
 
 function falarResposta(texto) {
 
-    if (!SPEECH_KEY) return;
-
-    try {
-
-        const speechConfig =
-            SpeechSDK.SpeechConfig
-                .fromSubscription(
-                    SPEECH_KEY,
-                    SPEECH_REGION
-                );
-
-        speechConfig
-            .speechSynthesisVoiceName =
-            "pt-BR-AntonioNeural";
-
-        const synthesizer =
-            new SpeechSDK
-                .SpeechSynthesizer(
-                    speechConfig
-                );
-
-        synthesizer.speakTextAsync(
-
-            texto,
-
-            function () {
-
-                console.log(
-                    "Resposta falada."
-                );
-
-                synthesizer.close();
-            },
-
-            function (erro) {
-
-                console.error(
-                    erro
-                );
-
-                synthesizer.close();
-            }
+    const speechConfig =
+        SpeechSDK.SpeechConfig.fromSubscription(
+            SPEECH_KEY,
+            SPEECH_REGION
         );
-    }
-    catch (erro) {
 
-        console.error(
-            erro
+    speechConfig.speechSynthesisVoiceName =
+        SPEECH_VOICE;
+
+    const synthesizer =
+        new SpeechSDK.SpeechSynthesizer(
+            speechConfig
         );
-    }
+
+    synthesizer.speakTextAsync(
+        texto,
+        function () {
+            synthesizer.close();
+        },
+        function (erro) {
+            console.error(erro);
+            synthesizer.close();
+        }
+    );
 }
